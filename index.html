@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Motion - Solana</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <img src="images/motion-logo.png" alt="Motion Logo" class="logo">
+    <h1>MOTION</h1>
+    <nav>
+      <a href="index.html">Solana</a>
+      <a href="evm.html">Ethereum & Base</a>
+    </nav>
+  </header>
+  <main>
+    <h2>Solana Swap (Powered by Jupiter)</h2>
+    <button id="connect-wallet">Connect Wallet</button>
+    <div id="swap-box">
+      <p>Select token pair and swap...</p>
+    </div>
+  </main>
+  <script src="https://unpkg.com/@solana/web3.js@1.73.2/lib/index.iife.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@jup-ag/core@4.0.0-beta.7/dist/index.iife.js"></script>
+  <script src="scripts/solana.js"></script>
+</body>
+</html>
