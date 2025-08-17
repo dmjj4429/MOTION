@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Motion • Solana</title>
+  <meta name="description" content="Motion — Solana swaps with Phantom & Jupiter." />
+  <meta name="theme-color" content="#089000">
+  <style>
+    :root{--bg:#0b0b0f;--card:#12121a;--muted:#8a8aa0;--text:#f5f6fa;--accent:#089000}
+    html,body{background:var(--bg);color:var(--text);margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif}
+    .wrap{max-width:980px;margin:24px auto;padding:16px}
+    header{display:flex;align-items:center;justify-content:space-between;margin:8px 0 20px}
+    .logo{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px;color:var(--accent);text-decoration:none}
+    .logo-badge{width:36px;height:36px;border-radius:12px;background:var(--accent);display:grid;place-items:center;color:#0b0b0f;font-weight:900}
+    .nav{display:flex;gap:10px}
+    .btn{background:var(--card);border:1px solid #1f2030;color:var(--text);padding:10px 14px;border-radius:12px;text-decoration:none}
+    .btn:hover{border-color:var(--accent);color:var(--accent)}
+    .card{background:var(--card);border:1px solid #1f2030;border-radius:16px;padding:20px}
+    h1,h2{color:var(--accent);margin:6px 0}
+    .muted{color:var(--muted)}
+    .grid{display:grid;gap:16px}
+    @media(min-width:900px){.grid{grid-template-columns:1.1fr .9fr}}
+    .stack{display:grid;gap:12px}
+    .row{display:flex;gap:8px;align-items:center}
+    select,input{background:#0f0f18;border:1px solid #2a2b3a;color:var(--text);border-radius:10px;padding:10px;font-size:14px;width:100%}
+    label{font-size:12px;color:var(--muted)}
+    .cta{display:inline-block;background:var(--accent);color:#0b0b0f;padding:10px 14px;border-radius:12px;text-decoration:none;font-weight:700;border:none;cursor:pointer}
+    .cta:hover{filter:brightness(1.05)}
+    .note{font-size:13px;color:var(--muted)}
+    .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+    .highlight{color:var(--accent);font-weight:600}
+    .status a{color:var(--accent)}
+    #toast{position:fixed;bottom:20px;right:20px;background:#1d1f2a;color:#fff;padding:12px 16px;border-radius:8px;opacity:0;transition:opacity .3s}
+    #toast.show{opacity:1}
+    /* badges + logos */
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:700;background:#0f0f18;border:1px solid #2a2b3a}
+    .dot{width:10px;height:10px;border-radius:50%}
+    .logo-ic{width:16px;height:16px;display:inline-block;line-height:0}
+    .logo-ic img{width:16px;height:16px;display:block}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <a href="index.html" class="logo"><div class="logo-badge">M</div><div>Motion</div></a>
+      <nav class="nav">
+        <a class="btn" href="index.html">Solana</a>
+        <a class="btn" href="evm.html">Ethereum & Base</a>
+      </nav>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <h1>Solana Swap (Jupiter)</h1>
+        <p class="muted">Connect <strong>Phantom</strong>, select tokens, and swap via <strong>Jupiter</strong>. Funds stay in your wallet.</p>
+
+        <div class="stack" id="app">
+          <div class="row">
+            <div style="flex:2">
+              <label>Wallet</label>
+              <div class="row">
+                <input id="account" placeholder="Not connected" readonly>
+                <button id="connect" class="cta" style="white-space:nowrap">Connect Phantom</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div style="flex:1">
+              <label>From token</label>
+              <select id="sellToken">
+                <option value="SOL">SOL (native)</option>
+                <option value="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v">USDC</option>
+                <option value="DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263">BONK</option>
+              </select>
+              <div class="row" style="margin-top:6px">
+                <span class="badge"><span id="sellDot" class="dot"></span><span id="sellLogo" class="logo-ic"></span><span id="sellSym">—</span></span>
+              </div>
+            </div>
+            <div style="flex:1">
+              <label>To token</label>
+              <select id="buyToken">
+                <option value="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v">USDC</option>
+                <option value="SOL">SOL (native)</option>
+                <option value="DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263">BONK</option>
+              </select>
+              <div class="row" style="margin-top:6px">
+                <span class="badge"><span id="buyDot" class="dot"></span><span id="buyLogo" class="logo-ic"></span><span id="buySym">—</span></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div style="flex:1">
+              <label>Amount (sell)</label>
+              <input id="amount" type="number" min="0" step="any" placeholder="0.0">
+            </div>
+            <div style="flex:1">
+              <label>Quote (price)</label>
+              <input id="quote" placeholder="--" readonly>
+            </div>
+          </div>
+
+          <div class="row">
+            <button id="getQuote" class="btn" style="flex:1">Get Quote</button>
+            <button id="swap" class="cta" style="flex:1">Swap</button>
+          </div>
+
+          <div class="note">Slippage: 1% (Jupiter default). <span class="highlight">Platform fee on Solana is not enabled yet</span> — requires Jupiter fee account setup.</div>
+          <div id="status" class="note status"></div>
+        </div>
+      </section>
+
+      <aside class="card">
+        <h2>Details</h2>
+        <p class="muted">Solana fee recipient (future): <span class="mono">G1sEHykBfEnU9AMX2Cv4XJw6GDa5FcCbHrq76oTErYQS</span></p>
+        <p class="muted">Popular tokens included: SOL, USDC, BONK.</p>
+        <h2>Troubleshooting</h2>
+        <ul class="muted">
+          <li>Phantom must be installed and unlocked.</li>
+          <li>If you lack an associated token account (ATA) for the output, Jupiter creates it within the swap (you still pay min rent/fees).</li>
+          <li>Need SOL for fees; micro swaps may fail if balance is near-zero.</li>
+        </ul>
+      </aside>
+    </div>
+
+    <footer class="muted" style="margin-top:24px">© <span id="yr"></span> Motion DEX • Non‑custodial UI.</footer>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="https://unpkg.com/@solana/web3.js@1.95.3/lib/index.iife.min.js"></script>
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    const LOGO = {
+      SOL:  'https://cryptologos.cc/logos/solana-sol-logo.svg?v=029',
+      USDC: 'https://cryptologos.cc/logos/usd-coin-usdc-logo.svg?v=029',
+      BONK: 'https://cryptologos.cc/logos/bonk-bonk-logo.svg?v=029'
+    };
+
+    const DECIMALS = {
+      SOL: 9,
+      'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v': 6,
+      'DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263': 5
+    };
+
+    const els = {
+      account:account, connect:connect, sellToken:sellToken, buyToken:buyToken,
+      amount:amount, quote:quote, getQuote:getQuote, swap:swap, status:status,
+      sellDot:document.getElementById('sellDot'), buyDot:document.getElementById('buyDot'),
+      sellLogo:document.getElementById('sellLogo'), buyLogo:document.getElementById('buyLogo'),
+      sellSym:document.getElementById('sellSym'), buySym:document.getElementById('buySym')
+    };
+
+    const state = { pubkey:null, quote:null };
+    function $(id){ return document.getElementById(id); }
+    function setStatus(html){ $('status').innerHTML = html || ''; }
+    function showToast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+    function metaFor(mint){
+      if(mint==='SOL') return { sym:'SOL', color:'#14f195', img: LOGO.SOL };
+      if(mint==='EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v') return { sym:'USDC', color:'#2775ca', img: LOGO.USDC };
+      if(mint==='DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263') return { sym:'BONK', color:'#f59e0b', img: LOGO.BONK };
+      return { sym: mint.slice(0,4)+'…', color:'#2a2b3a', img:'' };
+    }
+
+    function updateBadges(){
+      const mSell = metaFor($('sellToken').value);
+      const mBuy  = metaFor($('buyToken').value);
+      els.sellDot.style.background = mSell.color;
+      els.buyDot.style.background  = mBuy.color;
+      els.sellLogo.innerHTML = mSell.img ? `<img src="${mSell.img}" alt=""/>` : '';
+      els.buyLogo.innerHTML  = mBuy.img  ? `<img src="${mBuy.img}" alt=""/>` : '';
+      els.sellSym.textContent = mSell.sym;
+      els.buySym.textContent  = mBuy.sym;
+    }
+
+    async function connectPhantom(){
+      if(!window.solana || !window.solana.isPhantom){ alert('Install Phantom.'); return; }
+      const resp = await window.solana.connect();
+      state.pubkey = resp.publicKey.toString();
+      $('account').value = state.pubkey;
+      showToast('Phantom connected');
+    }
+
+    $('connect').addEventListener('click', connectPhantom);
+    $('sellToken').addEventListener('change', updateBadges);
+    $('buyToken').addEventListener('change', updateBadges);
+
+    function toBase(amount, decimals){
+      const [i,fRaw=''] = String(amount).split('.');
+      const f = fRaw.slice(0,decimals);
+      const padded = (f + '0'.repeat(decimals)).slice(0,decimals);
+      const base = BigInt(10)**BigInt(decimals);
+      return (BigInt(i||'0')*base + BigInt(padded||'0')).toString();
+    }
+
+    async function getQuote(){
+      setStatus('Fetching quote…');
+      if(!state.pubkey) await connectPhantom();
+      const input = $('sellToken').value;
+      const output= $('buyToken').value;
+      const amountUi = $('amount').value;
+      if(!amountUi || +amountUi<=0){ setStatus('Enter a valid amount.'); return; }
+      const inDecimals = input==='SOL'? 9 : DECIMALS[input]||6;
+      const amount = toBase(amountUi, inDecimals);
+      try{
+        const qs = new URLSearchParams({ inputMint: input==='SOL'?'So11111111111111111111111111111111111111112':input, outputMint: output==='SOL'?'So11111111111111111111111111111111111111112':output, amount, slippageBps: String(100) });
+        const url = `https://quote-api.jup.ag/v6/quote?${qs.toString()}`;
+        const res = await fetch(url);
+        if(!res.ok){ setStatus('No route found. Try another pair/amount.'); return; }
+        const data = await res.json();
+        state.quote = data;
+        $('quote').value = data.data && data.data[0] ? data.data[0].price || '--' : '--';
+        setStatus('Route found. Ready to swap.');
+      }catch(e){ console.error(e); setStatus('Quote failed.'); }
+    }
+
+    async function doSwap(){
+      if(!state.quote || !state.quote.data || !state.quote.data[0]){ setStatus('Get a quote first.'); return; }
+      if(!state.pubkey) { await connectPhantom(); }
+      const route = state.quote.data[0];
+      try{
+        const swapRes = await fetch('https://quote-api.jup.ag/v6/swap', {
+          method:'POST', headers:{ 'Content-Type':'application/json' },
+          body: JSON.stringify({
+            userPublicKey: state.pubkey,
+            route, 
+            wrapAndUnwrapSol: true,
+            dynamicComputeUnitLimit: true,
+            prioritizationFeeLamports: null
+          })
+        });
+        const { swapTransaction } = await swapRes.json();
+        const txBuf = Buffer.from(swapTransaction, 'base64');
+        const tx = solanaWeb3.Transaction.from(txBuf);
+        const { signature } = await window.solana.signAndSendTransaction(tx);
+        const link = `https://solscan.io/tx/${signature}`;
+        setStatus(`Swap sent: <a href="${link}" target="_blank" rel="noopener">${signature.slice(0,10)}…</a>`);
+        showToast('Swap submitted');
+      }catch(e){ console.error(e); setStatus('Swap rejected or failed.'); }
+    }
+
+    $('getQuote').addEventListener('click', getQuote);
+    $('swap').addEventListener('click', doSwap);
+
+    updateBadges();
+  </script>
+</body>
+</html>
